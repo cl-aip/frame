@@ -1,8 +1,8 @@
 ;;;-*- Mode: common-lisp; syntax: common-lisp; package: xrl; base: 10 -*-
 ;;;
-;;; A Frame System, XRL
+;;;; A Frame System, XRL
 ;;;
-;;;   from Artificial Intelligence Programming, 2nd. 
+;;;   from Chapter 13 of Artificial Intelligence Programming, 2nd. 
 ;;;   by Eugene Charniack, Christopher K. Riesbeck, 
 ;;;   Drew V. McDermott, and James R. Meehan.
 ;;;   LEA, 1987.
@@ -30,13 +30,15 @@
 (defvar *facet-table-size* 3
   "expected average number of facets")
 
-;;; There are three nested hash tables:
-;;;  *frames-table* has <symbol, frame> entries.
+;;; There are three kinds of hash tables:
+;;;  *frame-table* has {<frame-name>, <frame>} entries.
 ;;;    Each frame has a slot-table.
-;;;  A slot-table has <slot, facet-table> entries.
-;;;  An facet-table has <facet, value> entries.
+;;;  A slot-table has {<slot-name>, <facet-table>} entries.
+;;;    But <slot-name> is simply called <slot> in the following code.
+;;;  A facet-table has {<facet>, <value>} entries.
+;;;    <facet> is a symbol like =, if-needed, if-added, etc.
 
-(defvar *frames-table* (make-hash-table))
+(defvar *frame-table* (make-hash-table))
 
 ;;; A frame has three parts: a name, an isa, and a 
 ;;;   table of slots. To reduce printout, a frame
@@ -57,19 +59,22 @@
   "return the frame stored under frame-name,
    if any.  If none, signal an error."
   (multiple-value-bind (frame found-p)
-      (gethash frame-name *frames-table*)
+      (gethash frame-name *frame-table*)
     (if found-p
         frame
       (error "No such frame as ~S.~%" frame-name))))
+
+(defun frame-of (frame-name)
+  (gethash frame-name *frame-table*))
 
 (defun set-frame (frame-name)
   "return the frame stored under <frame-name>,
    if any.  If none, make one."
   (multiple-value-bind (frame found-p)
-      (gethash frame-name *frames-table*)
+      (gethash frame-name *frame-table*)
     (if found-p
         frame
-      (setf (gethash frame-name *frames-table*)
+      (setf (gethash frame-name *frame-table*)
         (make-frame :name frame-name)))))
 
 ;;;
@@ -77,18 +82,18 @@
 ;;;
 
 (defun get-facet (frame slot facet)
-  "return the value of the <facet> of the <slot> of 
-   the <frame>."
+  "return the value of <facet> of <slot> of <frame>."
+  (assert (typep frame 'frame) ()
+          "The first argument frame must be an instance of frame.")
   (let ((slot-table (frame-slot-table frame)))
-    (and (hash-table-p slot-table)
-         (let ((facet-table (gethash slot slot-table)))
-           (and (hash-table-p facet-table)
-                (values
-                 (gethash facet facet-table)))))))
+    ;; the slot-table is always defined when a frame is made.
+    (let ((facet-table (gethash slot slot-table)))
+      (when (hash-table-p facet-table)
+        ;; returns only a primary value
+        (values (gethash facet facet-table))))))
 
 (defun set-facet (frame slot facet value)
-  "set the value of the <facet> of the <slot> of the
-   <frame>."
+  "set the value of <facet> of <slot> in <frame>."
   (let ((slot-table (frame-slot-table frame)))
     (setf (gethash facet
                    (force-entry slot slot-table
@@ -96,8 +101,6 @@
                                     (make-hash-table
                                      :size *facet-table-size*))))
       value)))
-
-(defsetf get-facet set-facet)
 
 (defun force-entry (index table maker)
   (multiple-value-bind (entry found-p)
@@ -108,8 +111,7 @@
         (funcall maker)))))
 
 (defun explicit-frame-slots (frame)
-  "returns a list of the slot names stored with 
-   frame."
+  "returns a list of the slot names stored with <frame>."
   (let ((slots '()))
     (maphash #'(lambda (slot facet-table)
                  (declare (ignore facet-table))
@@ -192,33 +194,36 @@ xrl(3): (frame :name dwelling :isa thing)
 xrl(4): (frame :name apartment :isa dwelling)
 #<frame: apartment>
 xrl(5): (frame :name apt-at-100-york
-                   :isa apartment
-                   :with ((street-name = 'york)
-                          (street-number = 100)
-                          (wall-color = 'white)
-                          (floor-suface = 'wood)))
+               :isa apartment
+               :with ((street-name = 'york)
+                      (street-number = 100)
+                      (wall-color = 'white)
+                      (floor-suface = 'wood)))
 #<frame: apt-at-100-york>
 xrl(6): (frame :name apt1
-                   :isa apt-at-100-york
-                   :with ((number-of-rooms = 3)))
+               :isa apt-at-100-york
+               :with ((number-of-rooms = 3)))
 #<frame: apt1>
 xrl(7): (fget (get-frame 'apt1) 'wall-color)
 white
 xrl(8): (fget (get-frame 'apt1) 'number-of-rooms)
 3
 xrl(9): (defun get-street-noise (frame)
-              (cond ((not (eq (fget frame 'street-name) 'york))
-                     nil)
-                    ((> (fget frame 'street-number) 200)
-                     'high)
-                    (t 'very-high)))
+          (cond ((not (eq (fget frame 'street-name) 'york))
+                 nil)
+                ((> (fget frame 'street-number) 200)
+                 'high)
+                (t 'very-high)))
 get-street-noise
 xrl(10): (frame :name dwelling
-                   :isa thing
-                   :with ((street-noise
-                           :if-needed #'get-street-noise)))
+                :isa thing
+                :with ((street-noise
+                        :if-needed #'get-street-noise)))
 #<frame: dwelling>
 xrl(11): (fget (get-frame 'apt1) 'street-noise)
 very-high
-xrl(12): 
+xrl(12): (explicit-frame-slots (get-frame 'apt1))
+(number-of-rooms)
+xrl(13): (explicit-frame-slots (get-frame 'apt-at-100-york))
+(street-name street-number floor-suface wall-color)
 |#
