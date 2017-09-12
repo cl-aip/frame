@@ -8,10 +8,10 @@
 ;;;   LEA, 1987.
 ;;;
 ;;; To work around the name collegion on cg:form in ACL,
-;;; symbol form is changed to frame.
+;;; symbol `form' is changed to frame.
 ;;; To work around the name collegion on slot-value in Common Lisp,
-;;; symbol slot-value is changed to fget.
-;;; To make it easy to read the program, symbol aspect is changed to
+;;; symbol `slot-value' is changed to fget.
+;;; To make it easy to read the program, symbol `aspect' is changed to
 ;;; facet.
 ;;;
 ;;; Even though avoiding the name collegions mentioned above, 
