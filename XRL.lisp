@@ -18,6 +18,7 @@
 ;;; all definitions are in a dedicated package, xrl.
 
 (defpackage xrl
+  (:use :cl)
   (:documentation "This package is newly settled for XRL frame system."))
 
 (in-package :xrl)
