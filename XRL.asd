@@ -4,7 +4,7 @@
 (defpackage :xrl-system
   (:use :common-lisp :asdf))
 
-(in-package :search-system)
+(in-package :xrl-system)
 
 (defsystem :xrl
   :name "XRL"

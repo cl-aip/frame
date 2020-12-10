@@ -2,8 +2,8 @@
 
 (in-package :cg-user)
 
-(define-project :name :XRL
-  :modules (list (make-instance 'module :name "XRL.lisp"))
+(define-project :name :xrl
+  :modules (list (make-instance 'module :name "xrl.lisp"))
   :projects nil
   :libraries nil
   :editable-files nil

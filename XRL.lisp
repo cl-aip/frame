@@ -1,6 +1,6 @@
 ;;;-*- Mode: common-lisp; syntax: common-lisp; package: xrl; base: 10 -*-
 ;;;
-;;;; A Frame System, XRL
+;;;; A Frame System, xrl
 ;;;
 ;;;   from Chapter 13 of Artificial Intelligence Programming, 2nd. 
 ;;;   by Eugene Charniack, Christopher K. Riesbeck, 
@@ -19,7 +19,7 @@
 
 (defpackage xrl
   (:use :cl)
-  (:documentation "This package is newly settled for XRL frame system."))
+  (:documentation "This package is newly settled for xrl frame system."))
 
 (in-package :xrl)
 
